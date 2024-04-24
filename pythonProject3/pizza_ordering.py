@@ -1,0 +1,77 @@
+import sqlite3
+from datetime import datetime
+
+
+def create_pizzas_table():
+    conn = sqlite3.connect('pizza_orders.db')
+    c = conn.cursor()
+    try:
+        c.execute('''SELECT * FROM pizzas''')
+    except sqlite3.OperationalError:
+        c.execute('''CREATE TABLE IF NOT EXISTS pizzas (title text, ingredients text, cost int)''')
+        c.execute('''INSERT INTO pizzas VALUES ("margarita", "tomato sauce, mozzarella cheese, tomato, basil", 489), 
+            ("pepperoni", "cheese, salami, ham, onion, hot pepper", 429)''')
+    conn.commit()
+    conn.close()
+
+
+def ordering(username):
+    create_pizzas_table()
+    basket = ['', 'Pepperoni', 'Margarita', 'Love']
+    print('(1) - Pepperoni')
+    print('(2) - Margarita')
+    print('(3) - Love')
+    print('To choose the desired ingredients press ENTER')
+    order = list(map(int, input(': ').split()))
+    quantity = 1
+    if order:
+        pizza_ordered = basket[order[0]]
+    else:
+        pizza_ordered = ''
+    if len(order) > 1:
+        quantity = order[1]
+    if pizza_ordered == '':
+        print("Type in your desired ingredients separated by space: ")
+        ingredients = input().split()
+        conn = sqlite3.connect('pizza_orders.db')
+        c = conn.cursor()
+        result = set()
+        for ingredient in ingredients:
+            c.execute('''SELECT title FROM pizzas WHERE ingredients LIKE "%"||?||"%"''', (ingredient,))
+            pizzas = c.fetchall()
+            for i in pizzas:
+                result.add(i[0])
+        if len(result) > 0:
+            print("You would try these pizzas:", ', '.join([i for i in result]))
+        else:
+            print("Sorry, we have no pizza that satisfies your desires")
+
+    else:
+        conn = sqlite3.connect('pizza_orders.db')
+        c = conn.cursor()
+        print(pizza_ordered)
+        print(order)
+        c.execute('''SELECT cost FROM pizzas WHERE title = ?''', (pizza_ordered.lower(),))
+        price = c.fetchone()[0]
+        time = datetime.now()
+        add_order_to_database(username, pizza_ordered, quantity, time, price)
+        print("Add ingredients")
+
+
+def add_order_to_database(username, pizza_ordered, quantity, time, price):
+    cost = calculate_cost(quantity, price)
+
+    conn = sqlite3.connect('pizza_orders.db')
+    c = conn.cursor()
+    c.execute('''INSERT INTO orders VALUES (?, ?, ?, ?, ?)''',
+              (username, pizza_ordered, quantity, str(time), cost))
+    conn.commit()
+    conn.close()
+    print('Order added to the database successfully!')
+
+
+# Function to calculate the cost of the order
+def calculate_cost(quantity, price):
+    # Add your own logic here to calculate the cost based on pizza and quantity
+    cost = quantity * price
+    return cost
