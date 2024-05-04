@@ -1,6 +1,6 @@
 import sqlite3
 import hashlib
-import argparse
+
 
 def create_users_table():
     conn = sqlite3.connect('pizza_orders.db')
