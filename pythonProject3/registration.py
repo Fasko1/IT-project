@@ -48,18 +48,3 @@ def registration():
     add_user_to_database(username, hashed_password, 'basic', preferences)
     print('User registered successfully!')
 
-if name == 'main':
-    parser = argparse.ArgumentParser(description='Fatty Man Pizza Ordering System')
-    parser.add_argument('--username', help='Username for login')
-    parser.add_argument('--password', help='Password for login')
-
-    args = parser.parse_args()
-
-    if args.username and args.password:
-        if not verify_user(args.username, args.password):
-            print('Login failed. Please try again.')
-            registration()
-        else:
-            ordering(args.username)
-    else:
-          main()
