@@ -5,7 +5,8 @@ from datetime import datetime, timedelta
 def create_orders_table():
     conn = sqlite3.connect('pizza_orders.db')
     c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS orders (username text, pizza_ordered text, quantity integer, time text, delivery_time text, cost real)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS orders (username text, pizza_ordered text, 
+    quantity integer, time text, delivery_time text, cost real)''')
     conn.commit()
     conn.close()
 
@@ -59,10 +60,29 @@ def choose_time(time):
                 print('Incorrect input')
 
 
+def offer(username):
+    conn = sqlite3.connect('pizza_orders.db')
+    c = conn.cursor()
+    c.execute('''SELECT preferences FROM users WHERE username = ?''', (username, ))
+    preferences = c.fetchone()[0].split(', ')
+    if preferences[0] != '':
+        result = set()
+        for ingredient in preferences:
+            c.execute('''SELECT title FROM pizzas WHERE ingredients LIKE "%"||?||"%"''', (ingredient,))
+            pizzas = c.fetchall()
+            for i in pizzas:
+                result.add(i[0])
+        if len(result) > 0:
+            print("You would try these pizzas:", ', '.join([i for i in result]))
+
+
 def ordering(username):
     create_pizzas_table()
     create_orders_table()
     basket = ['', 'Pepperoni', 'Margarita', 'Love']
+
+    offer(username)
+
     print('(1) - Pepperoni')
     print('(2) - Margarita')
     print('(3) - Love')

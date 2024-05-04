@@ -34,17 +34,20 @@ def verify_user(username, password):
 
 
 def get_order_history(username):
-    conn = sqlite3.connect('pizza_orders.db')
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM orders WHERE username = ?', (username,))
-    orders = cursor.fetchall()
+    try:
+        conn = sqlite3.connect('pizza_orders.db')
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM orders WHERE username = ?', (username,))
+        orders = cursor.fetchall()
 
-    if len(orders) == 0:
+        if len(orders) == 0:
+            print('No orders found for this user.')
+        else:
+            for order in orders:
+                print(f'Order ID: {order[0]}, Pizza: {order[1]}, Quantity: {order[2]},'
+                      f' Time: {order[3]}, Delivery time: {order[4]}, Cost: {order[5]}')
+    except Exception:
         print('No orders found for this user.')
-    else:
-        for order in orders:
-            print(f'Order ID: {order[0]}, Pizza: {order[1]}, Quantity: {order[2]},'
-                  f' Time: {order[3]}, Delivery time: {order[4]}, Cost: {order[5]}')
 
 
 def print_main_menu():
