@@ -19,7 +19,8 @@ def create_pizzas_table():
     except sqlite3.OperationalError:
         c.execute('''CREATE TABLE IF NOT EXISTS pizzas (title text, ingredients text, cost int)''')
         c.execute('''INSERT INTO pizzas VALUES ("margarita", "tomato sauce, mozzarella cheese, tomato, basil", 489), 
-            ("pepperoni", "cheese, salami, ham, onion, hot pepper", 429)''')
+            ("pepperoni", "cheese, salami, ham, onion, hot pepper", 429), 
+            ("mushroom pizza", "cheese, tomato, champignons, olives, ham", 539)''')
     conn.commit()
     conn.close()
 
@@ -40,7 +41,6 @@ def choose_time(time):
                     print("Type in desired delivery time (hours:minutes): ")
                     temp = input()
                     delivery_time = current_time.replace(hour=int(temp.split(':')[0]), minute=int(temp.split(':')[1]))
-                    print(current_time + timedelta(minutes=30), 1243214)
                     if delivery_time <= current_time:
                         print('Incorrect delivery time. Try again')
                     elif delivery_time.replace(second=0) <= current_time.replace(second=0) + timedelta(minutes=30):
@@ -79,13 +79,13 @@ def offer(username):
 def ordering(username):
     create_pizzas_table()
     create_orders_table()
-    basket = ['', 'Pepperoni', 'Margarita', 'Love']
+    basket = ['', 'Pepperoni', 'Margarita', 'Mushroom pizza']
 
     offer(username)
 
     print('(1) - Pepperoni')
     print('(2) - Margarita')
-    print('(3) - Love')
+    print('(3) - Mushroom pizza')
     print('To choose the desired ingredients press ENTER')
     order = list(map(int, input(': ').split()))
     quantity = 1
@@ -95,7 +95,6 @@ def ordering(username):
         pizza_ordered = ''
     if len(order) > 1:
         quantity = order[1]
-        print(quantity)
     if pizza_ordered == '':
         print("Type in your desired ingredients separated by space: ")
         ingredients = input().split()
