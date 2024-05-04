@@ -2,6 +2,14 @@ import sqlite3
 from datetime import datetime, timedelta
 
 
+def create_orders_table():
+    conn = sqlite3.connect('pizza_orders.db')
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS orders (username text, pizza_ordered text, quantity integer, time text, delivery_time text, cost real)''')
+    conn.commit()
+    conn.close()
+
+
 def create_pizzas_table():
     conn = sqlite3.connect('pizza_orders.db')
     c = conn.cursor()
@@ -31,6 +39,7 @@ def choose_time(time):
                     print("Type in desired delivery time (hours:minutes): ")
                     temp = input()
                     delivery_time = current_time.replace(hour=int(temp.split(':')[0]), minute=int(temp.split(':')[1]))
+                    print(current_time + timedelta(minutes=30), 1243214)
                     if delivery_time <= current_time:
                         print('Incorrect delivery time. Try again')
                     elif delivery_time.replace(second=0) <= current_time.replace(second=0) + timedelta(minutes=30):
@@ -52,6 +61,7 @@ def choose_time(time):
 
 def ordering(username):
     create_pizzas_table()
+    create_orders_table()
     basket = ['', 'Pepperoni', 'Margarita', 'Love']
     print('(1) - Pepperoni')
     print('(2) - Margarita')
@@ -65,6 +75,7 @@ def ordering(username):
         pizza_ordered = ''
     if len(order) > 1:
         quantity = order[1]
+        print(quantity)
     if pizza_ordered == '':
         print("Type in your desired ingredients separated by space: ")
         ingredients = input().split()
@@ -82,14 +93,17 @@ def ordering(username):
             print("Sorry, we have no pizza that satisfies your desires")
 
     else:
-        conn = sqlite3.connect('pizza_orders.db')
-        c = conn.cursor()
-        c.execute('''SELECT cost FROM pizzas WHERE title = ?''', (pizza_ordered.lower(),))
-        price = c.fetchone()[0]
-        time = datetime.now().replace(microsecond=0)
-        delivery_time = choose_time(time)
-        add_order_to_database(username, pizza_ordered, quantity, time, delivery_time, price)
-        print("Add ingredients")
+        if quantity == 0:
+            print("We cannot deliver 0 pizzas")
+        else:
+            conn = sqlite3.connect('pizza_orders.db')
+            c = conn.cursor()
+            c.execute('''SELECT cost FROM pizzas WHERE title = ?''', (pizza_ordered.lower(),))
+            price = c.fetchone()[0]
+            time = datetime.now().replace(microsecond=0)
+            delivery_time = choose_time(time)
+            add_order_to_database(username, pizza_ordered, quantity, time, delivery_time, price)
+            print("Add ingredients")
 
 
 def add_order_to_database(username, pizza_ordered, quantity, time, delivery_time, price):

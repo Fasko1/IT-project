@@ -1,64 +1,36 @@
 import sqlite3
 import hashlib
 from pizza_ordering import ordering
-
-
-# Function to create the SQLite database and table
-def create_database(name):
-    conn = sqlite3.connect('pizza_orders.db')
-    c = conn.cursor()
-    if name == 'orders':
-        c.execute('''CREATE TABLE IF NOT EXISTS orders 
-                     (username text, pizza_ordered text, quantity integer, time text, delivery_time text, cost real)''')
-    elif name == 'users':
-        c.execute('''CREATE TABLE IF NOT EXISTS users 
-                             (username text, hashed_password text, rights text)''')
-    conn.commit()
-    conn.close()
+from registration import registration
 
 
 def verify_user(username, password):
-    conn = sqlite3.connect('pizza_orders.db')
-    c = conn.cursor()
-    c.execute('''SELECT hashed_password FROM users WHERE username = ?''', (username,))
-    result = c.fetchone()
+    try:
+        conn = sqlite3.connect('pizza_orders.db')
+        c = conn.cursor()
+        c.execute('''SELECT hashed_password FROM users WHERE username = ?''', (username,))
+        result = c.fetchone()
 
-    if result:
-        hashed_password = result[0]
-        input_password_hash = hashlib.sha256(password.encode()).hexdigest()
+        if result:
+            hashed_password = result[0]
+            input_password_hash = hashlib.sha256(password.encode()).hexdigest()
 
-        if hashed_password == input_password_hash:
-            print('User login successful!')
+            if hashed_password == input_password_hash:
+                print('User login successful!')
+            else:
+                print('Incorrect password. Please try again.')
+                conn.close()
+                return False
         else:
-            print('Incorrect password. Please try again.')
+            print('User not found. Please register first.')
             conn.close()
             return False
-    else:
-        print('User not found. Please register first.')
+
         conn.close()
+        return True
+    except Exception:
+        print('User not found. Please register first.')
         return False
-
-    conn.close()
-    return True
-
-
-def check_username(username):
-    conn = sqlite3.connect('pizza_orders.db')
-    c = conn.cursor()
-    c.execute('''SELECT username FROM users WHERE username = ?''', (username,))
-    result = c.fetchone()
-    if result is not None:
-        print('The nickname is busy, try another')
-        return False
-    return True
-
-
-def add_user_to_database(username, hashed_password, rights):
-    conn = sqlite3.connect('pizza_orders.db')
-    c = conn.cursor()
-    c.execute('''INSERT INTO users VALUES (?, ?, ?)''', (username, hashed_password, rights))
-    conn.commit()
-    conn.close()
 
 
 def get_order_history(username):
@@ -82,24 +54,11 @@ def print_main_menu():
 # Main program loop
 def main():
     print('WELCOME TO FATTY MAN PIZZA ORDERING SYSTEM!')
-
     print_main_menu()
-    create_database('users')
-    create_database('orders')
     while True:
-
         choice = input('Enter your choice: ')
-
         if choice == '1':
-            username = input('Enter username: ')
-            while not check_username(username):
-                username = input('Enter username: ')
-            password = input('Enter password: ')
-            hashed_password = hashlib.sha256(password.encode()).hexdigest()
-            create_database('users')  # Create the database if not already exist
-            add_user_to_database(username, hashed_password, 'basic')
-            print('User registered successfully!')
-
+            registration()
         elif choice == '2':
             username = input('Enter username: ')
             password = input('Enter password: ')
@@ -118,7 +77,6 @@ def main():
                 if option == '3':
                     print_main_menu()
                     break
-
             pass
 
         elif choice == 'h':
