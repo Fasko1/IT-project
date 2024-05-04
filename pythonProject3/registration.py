@@ -58,6 +58,7 @@ if name == 'main':
     if args.username and args.password:
         if not verify_user(args.username, args.password):
             print('Login failed. Please try again.')
+            registration()
         else:
             ordering(args.username)
     else:
