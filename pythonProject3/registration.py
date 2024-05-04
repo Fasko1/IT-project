@@ -47,4 +47,5 @@ def registration():
     create_users_table()  # Create the database if not already exist
     add_user_to_database(username, hashed_password, 'basic', preferences)
     print('User registered successfully!')
+    return username
 

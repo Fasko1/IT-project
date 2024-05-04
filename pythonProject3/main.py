@@ -69,18 +69,7 @@ def main():
 
             if not verify_user(username, password):
                 continue
-            print('(1) Order Pizza')
-            print('(2) Get history')
-            print('(3) Log out')
-            while True:
-                option = input(': ')
-                if option == '1':
-                    ordering(username)
-                if option == '2':
-                    get_order_history(username)
-                if option == '3':
-                    print_main_menu()
-                    break
+            select_option(username)
             pass
 
         elif choice == 'h':
@@ -95,8 +84,21 @@ def main():
             print('Invalid choice. Please try again.')
 
 
+def select_option(username):
+    print('(1) Order Pizza')
+    print('(2) Get history')
+    print('(3) Log out')
+    while True:
+        option = input(': ')
+        if option == '1':
+            ordering(username)
+        if option == '2':
+            get_order_history(username)
+        if option == '3':
+            break
+
+
 if __name__ == '__main__':
-    if name == 'main':
     parser = argparse.ArgumentParser(description='Fatty Man Pizza Ordering System')
     parser.add_argument('--username', help='Username for login')
     parser.add_argument('--password', help='Password for login')
@@ -106,8 +108,10 @@ if __name__ == '__main__':
     if args.username and args.password:
         if not verify_user(args.username, args.password):
             print('Login failed. Please try again.')
-            registration()
+            username = registration()
+            select_option(username)
         else:
-            ordering(args.username)
+            username = args.username
+            select_option(username)
     else:
           main()
