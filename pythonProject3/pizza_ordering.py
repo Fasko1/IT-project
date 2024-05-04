@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 def create_pizzas_table():
@@ -13,6 +13,41 @@ def create_pizzas_table():
             ("pepperoni", "cheese, salami, ham, onion, hot pepper", 429)''')
     conn.commit()
     conn.close()
+
+
+def choose_time(time):
+    while True:
+        current_time = time
+        time1 = current_time + timedelta(minutes=30)
+        time2 = current_time + timedelta(hours=1)
+        time3 = current_time + timedelta(hours=2)
+
+        print(f"Choose delivery time: \n1. {time1.strftime('%H:%M')}\n2. {time2.strftime('%H:%M')}\n"
+              f"3. {time3.strftime('%H:%M')}\nPress ENTER to type in your time")
+        delivery_time = input()
+        if delivery_time == '':
+            while True:
+                try:
+                    print("Type in desired delivery time (hours:minutes): ")
+                    temp = input()
+                    delivery_time = current_time.replace(hour=int(temp.split(':')[0]), minute=int(temp.split(':')[1]))
+                    if delivery_time <= current_time:
+                        print('Incorrect delivery time. Try again')
+                    elif delivery_time.replace(second=0) <= current_time.replace(second=0) + timedelta(minutes=30):
+                        print('We wil not be able to deliver the pizza in that time. Type in a later time')
+                    else:
+                        return delivery_time
+                except Exception:
+                    print("Incorrect input. Try again")
+        else:
+            if delivery_time == '1':
+                return time1
+            elif delivery_time == '2':
+                return time2
+            elif delivery_time == '3':
+                return time3
+            else:
+                print('Incorrect input')
 
 
 def ordering(username):
@@ -49,22 +84,21 @@ def ordering(username):
     else:
         conn = sqlite3.connect('pizza_orders.db')
         c = conn.cursor()
-        print(pizza_ordered)
-        print(order)
         c.execute('''SELECT cost FROM pizzas WHERE title = ?''', (pizza_ordered.lower(),))
         price = c.fetchone()[0]
-        time = datetime.now()
-        add_order_to_database(username, pizza_ordered, quantity, time, price)
+        time = datetime.now().replace(microsecond=0)
+        delivery_time = choose_time(time)
+        add_order_to_database(username, pizza_ordered, quantity, time, delivery_time, price)
         print("Add ingredients")
 
 
-def add_order_to_database(username, pizza_ordered, quantity, time, price):
+def add_order_to_database(username, pizza_ordered, quantity, time, delivery_time, price):
     cost = calculate_cost(quantity, price)
 
     conn = sqlite3.connect('pizza_orders.db')
     c = conn.cursor()
-    c.execute('''INSERT INTO orders VALUES (?, ?, ?, ?, ?)''',
-              (username, pizza_ordered, quantity, str(time), cost))
+    c.execute('''INSERT INTO orders VALUES (?, ?, ?, ?, ?, ?)''',
+              (username, pizza_ordered, quantity, str(time), str(delivery_time), cost))
     conn.commit()
     conn.close()
     print('Order added to the database successfully!')

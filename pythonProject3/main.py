@@ -9,7 +9,7 @@ def create_database(name):
     c = conn.cursor()
     if name == 'orders':
         c.execute('''CREATE TABLE IF NOT EXISTS orders 
-                     (username text, pizza_ordered text, quantity integer, time text, cost real)''')
+                     (username text, pizza_ordered text, quantity integer, time text, delivery_time text, cost real)''')
     elif name == 'users':
         c.execute('''CREATE TABLE IF NOT EXISTS users 
                              (username text, hashed_password text, rights text)''')
@@ -71,7 +71,8 @@ def get_order_history(username):
         print('No orders found for this user.')
     else:
         for order in orders:
-            print(f'Order ID: {order[0]}, Pizza: {order[1]}, Quantity: {order[2]}, Time: {order[3]}, Cost: {order[4]}')
+            print(f'Order ID: {order[0]}, Pizza: {order[1]}, Quantity: {order[2]},'
+                  f' Time: {order[3]}, Delivery time: {order[4]}, Cost: {order[5]}')
 
 
 def print_main_menu():
