@@ -1,6 +1,6 @@
 import sqlite3
 import hashlib
-from pizza_ordering import ordering
+from pizza_ordering import ordering, repeat_order
 from registration import registration
 import argparse
 
@@ -26,7 +26,6 @@ def verify_user(username, password):
             print('User not found. Please register first.')
             conn.close()
             return False
-
         conn.close()
         return True
     except Exception:
@@ -45,8 +44,8 @@ def get_order_history(username):
             print('No orders found for this user.')
         else:
             for order in orders:
-                print(f'Order ID: {order[0]}, Pizza: {order[1]}, Quantity: {order[2]},'
-                      f' Time: {order[3]}, Delivery time: {order[4]}, Cost: {order[5]}')
+                print(f'Order ID: {order[0]}, Pizza: {order[2]}, Quantity: {order[4]},'
+                      f' Time: {order[5]}, Delivery time: {order[6]}, Cost: {order[7]}')
     except Exception:
         print('No orders found for this user.')
 
@@ -85,10 +84,10 @@ def main():
 
 
 def select_option(username):
-    print('(1) Order Pizza')
-    print('(2) Get history')
-    print('(3) Log out')
     while True:
+        print('(1) Order Pizza')
+        print('(2) Get history')
+        print('(3) Log out')
         option = input(': ')
         if option == '1':
             ordering(username)

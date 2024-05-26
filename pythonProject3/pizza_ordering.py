@@ -7,7 +7,7 @@ def create_orders_table():
     conn = sqlite3.connect('pizza_orders.db')
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS orders (id integer unique, username text, pizza_ordered text, 
-    quantity integer, time text, delivery_time text, cost real)''')
+    extra_ingredients text, quantity integer, time text, delivery_time text, cost real)''')
     conn.commit()
     conn.close()
 
@@ -21,7 +21,10 @@ def create_pizzas_table():
         c.execute('''CREATE TABLE IF NOT EXISTS pizzas (title text, ingredients text, cost int)''')
         c.execute('''INSERT INTO pizzas VALUES ("margarita", "tomato sauce, mozzarella cheese, tomato, basil", 489), 
             ("pepperoni", "cheese, salami, ham, onion, hot pepper", 429), 
-            ("mushroom pizza", "cheese, tomato, champignons, olives, ham", 539)''')
+            ("mushroom", "cheese, tomato, champignons, olives, ham", 539),
+            ("mexican", "pesto sauce, tomato sauce, cheese, onion, sweet pepper, hot pepper, olives, ground beef", 549), 
+            ("seafood", "cheese, boiled shrimp, olives, tomato sauce", 569), 
+            ("three cheese", "mozarella cheese, parmesan cheese", "299")''')
     conn.commit()
     conn.close()
 
@@ -77,13 +80,42 @@ def offer(username):
             print("You would try these pizzas:", ', '.join([i for i in result]))
 
 
+def pizza_menu():
+    conn = sqlite3.connect('pizza_orders.db')
+    c = conn.cursor()
+    c.execute('''SELECT * FROM pizzas''')
+    result = c.fetchall()
+    basket = ['']
+    for i in range(len(result)):
+        basket.append(result[i][0])
+        print(f'({i + 1}) - {result[i][0].capitalize()}. Price: {result[i][-1]}')
+    conn.close()
+    return basket
+
+
+def add_ingredients():
+
+    all_ingredients = ('tomato, mozzarella cheese, basil, salami, ham, onion, hot pepper, champignons, olives,'
+                   ' pesto sauce, sweet pepper, ground beef, boiled shrimp, parmesan cheese, pineapple, eggplant,'
+                   ' smoked chicken').split(', ')
+    print('Would you like to add some extra ingredients')
+    k = 1
+    for first, second in zip(all_ingredients[::2], all_ingredients[1::2]):
+        print(f'{k:}. {first:<{22 - len(str(k))}}{k + 1}. {second}')
+        k += 2
+    ingredients = input('Enter the numbers of desired products separated by space: ').split()
+    if len(ingredients) > 0:
+        return ', '.join([all_ingredients[int(i)] for i in ingredients])
+    return None
+
+
 def ordering(username):
 
     create_pizzas_table()
     create_orders_table()
-    basket = ['', 'Pepperoni', 'Margarita', 'Mushroom pizza']
     if not repeat_order(username):
         offer(username)
+        basket = pizza_menu()
         print('(1) - Pepperoni')
         print('(2) - Margarita')
         print('(3) - Mushroom pizza')
@@ -122,18 +154,21 @@ def ordering(username):
                 price = c.fetchone()[0]
                 time = datetime.now().replace(microsecond=0)
                 delivery_time = choose_time(time)
-                add_order_to_database(randint(1, 1000000), username, pizza_ordered, quantity, time, delivery_time, price)
-                print("Add ingredients")
+
+                extra_ingredients = add_ingredients()
+
+                add_order_to_database(randint(1, 1000000), username, pizza_ordered, extra_ingredients,
+                                      quantity, time, delivery_time, price)
 
 
-def add_order_to_database(id, username, pizza_ordered, quantity, time, delivery_time, price):
+def add_order_to_database(id, username, pizza_ordered, extra_ingredients, quantity, time, delivery_time, price):
     cost = calculate_cost(quantity, price)
     conn = sqlite3.connect('pizza_orders.db')
     c = conn.cursor()
     while True:
         try:
-            c.execute('''INSERT INTO orders VALUES (?, ?, ?, ?, ?, ?, ?)''',
-                      (id, username, pizza_ordered, quantity, str(time), str(delivery_time), cost))
+            c.execute('''INSERT INTO orders VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+                      (id, username, pizza_ordered, extra_ingredients, quantity, str(time), str(delivery_time), cost))
             break
         except sqlite3.IntegrityError:
             id = randint(1, 1000000)
@@ -154,16 +189,17 @@ def repeat_order(username):
     c = conn.cursor()
     c.execute('''SELECT * FROM orders WHERE username = ?''', (username,))
     result = c.fetchall()
+    conn.close()
     if result:
         result = result[-1]
-        pizza_ordered, quantity, price = result[2], result[3], result[6]
+        pizza_ordered, quantity, price = result[2], result[4], result[7]
         print(f'Your previous order: {pizza_ordered} in quantity of {quantity}. Cost: {price}. Repeat?')
         option = input('Yes/No: ').lower()
         if option == 'yes':
             time = datetime.now().replace(microsecond=0)
             delivery_time = choose_time(time)
+            extra_ingredients = add_ingredients()
             id = randint(1, 1000000)
-            add_order_to_database(id, username, pizza_ordered, quantity, time, delivery_time, price)
-            print("Add ingredients")
+            add_order_to_database(id, username, pizza_ordered, extra_ingredients, quantity, time, delivery_time, price)
             return True
     return False
