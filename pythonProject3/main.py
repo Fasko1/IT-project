@@ -1,8 +1,9 @@
 import sqlite3
 import hashlib
-from pizza_ordering import ordering, repeat_order
+from pizza_ordering import ordering
 from registration import registration
 import argparse
+from datetime import datetime
 
 
 def verify_user(username, password):
@@ -50,6 +51,29 @@ def get_order_history(username):
         print('No orders found for this user.')
 
 
+def get_order_status(username):
+    try:
+        conn = sqlite3.connect('pizza_orders.db')
+        c = conn.cursor()
+        c.execute('''SELECT delivery_time FROM orders WHERE username = ?''', (username,))
+        result = c.fetchall()[-1][0]
+        delivery_time = datetime.strptime(result, '%Y-%m-%d %H:%M:%S')
+        c.execute('''SELECT time FROM orders WHERE username = ?''', (username, ))
+        result = c.fetchall()[-1][0]
+        time = datetime.strptime(result, '%Y-%m-%d %H:%M:%S')
+        c.execute('''SELECT id FROM orders WHERE username = ?''', (username,))
+        id = c.fetchall()[-1][0]
+        current_time = datetime.now().replace(microsecond=0)
+        if (current_time - time).total_seconds() / 60 > 20 and current_time < delivery_time:
+            print(f"The order {id} is being delivered")
+        elif current_time > delivery_time:
+            print(f"The order {id} is delivered")
+        elif (current_time - time).total_seconds() / 60 < 20:
+            print(f"The order {id} is being cooked")
+    except Exception:
+        print('There are no orders')
+
+
 def print_main_menu():
     print('1. Register\n2. Login\nPress "h" for help')
 
@@ -87,13 +111,16 @@ def select_option(username):
     while True:
         print('(1) Order Pizza')
         print('(2) Get history')
-        print('(3) Log out')
+        print('(3) Get the order status')
+        print('(4) Log out')
         option = input(': ')
         if option == '1':
             ordering(username)
-        if option == '2':
+        elif option == '2':
             get_order_history(username)
-        if option == '3':
+        elif option == '3':
+            get_order_status(username)
+        elif option == '4':
             break
 
 

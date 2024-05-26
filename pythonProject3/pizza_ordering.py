@@ -104,8 +104,16 @@ def add_ingredients():
         print(f'{k:}. {first:<{22 - len(str(k))}}{k + 1}. {second}')
         k += 2
     ingredients = input('Enter the numbers of desired products separated by space or press ENTER: ').split()
+    extra_ingredients = []
     if len(ingredients) > 0:
-        return ', '.join([all_ingredients[int(i)] for i in ingredients])
+        for i in ingredients:
+            try:
+                if 0 < int(i) <= len(all_ingredients):
+                    extra_ingredient = all_ingredients[int(i) - 1]
+                    extra_ingredients.append(extra_ingredient)
+            except Exception:
+                pass
+        return ', '.join(extra_ingredients)
     return None
 
 
@@ -113,11 +121,14 @@ def remove_ingredients(title):
     conn = sqlite3.connect('pizza_orders.db')
     c = conn.cursor()
     c.execute('''SELECT ingredients FROM pizzas WHERE title = ?''', (title,))
-    print('Type in the ingredients you want to remove or press ENTER')
+    print('Type in the ingredients you want to remove separated by comma and space or press ENTER')
     ingredients = c.fetchall()[0][0]
     print(ingredients)
-    removed_ingredients = input()
-    return removed_ingredients
+    removed_ingredients = input().split(', ')
+    for i in removed_ingredients:
+        if i not in ingredients.split(', '):
+            removed_ingredients.remove(i)
+    return ', '.join(removed_ingredients)
 
 
 def ordering(username):
@@ -139,8 +150,8 @@ def ordering(username):
         if len(order) > 1:
             quantity = order[1]
         if pizza_ordered == '':
-            print("Type in your desired ingredients separated by space: ")
-            ingredients = input().split()
+            print("Type in your desired ingredients separated by comma and space: ")
+            ingredients = input().split(', ')
             conn = sqlite3.connect('pizza_orders.db')
             c = conn.cursor()
             result = set()

@@ -31,8 +31,8 @@ def add_user_to_database(username, hashed_password, rights, preferences):
 
 
 def choose_preferences():
-    print("Type in your desired ingredients separated by space: ")
-    preferences = ', '.join(input().split())
+    print("Type in your desired ingredients separated by comma and space: ")
+    preferences = ', '.join(input().split(', '))
     return preferences
 
 
