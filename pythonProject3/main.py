@@ -44,8 +44,8 @@ def get_order_history(username):
             print('No orders found for this user.')
         else:
             for order in orders:
-                print(f'Order ID: {order[0]}, Pizza: {order[2]}, Quantity: {order[4]},'
-                      f' Time: {order[5]}, Delivery time: {order[6]}, Cost: {order[7]}')
+                print(f'Order ID: {order[0]}, Pizza: {order[2]}, Quantity: {order[5]},'
+                      f' Time: {order[6]}, Delivery time: {order[7]}, Cost: {order[8]}')
     except Exception:
         print('No orders found for this user.')
 
