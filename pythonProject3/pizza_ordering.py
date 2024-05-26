@@ -137,9 +137,6 @@ def ordering(username):
     if not repeat_order(username):
         offer(username)
         basket = pizza_menu()
-        print('(1) - Pepperoni')
-        print('(2) - Margarita')
-        print('(3) - Mushroom pizza')
         print('To choose the desired ingredients press ENTER')
         order = list(map(int, input(': ').split()))
         quantity = 1
