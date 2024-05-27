@@ -64,21 +64,67 @@ def get_order_status(username):
         c.execute('''SELECT id FROM orders WHERE username = ?''', (username,))
         id = c.fetchall()[-1][0]
         current_time = datetime.now().replace(microsecond=0)
+        conn.close()
         if (current_time - time).total_seconds() / 60 > 20 and current_time < delivery_time:
-            print(f"The order {id} is being delivered")
+            return 1, id
         elif current_time > delivery_time:
-            print(f"The order {id} is delivered")
+            return 2, id
         elif (current_time - time).total_seconds() / 60 < 20:
-            print(f"The order {id} is being cooked")
+            return 3, id
     except Exception:
-        print('There are no orders')
+        conn.close()
+        return 0, 0
 
 
 def print_main_menu():
     print('1. Register\n2. Login\nPress "h" for help')
 
 
-# Main program loop
+def cancel_order(username):
+    try:
+        conn = sqlite3.connect('pizza_orders.db')
+        c = conn.cursor()
+        c.execute('''SELECT * FROM orders WHERE username = ?''', (username,))
+        order = c.fetchall()[-1]
+        if get_order_status(username)[0] == 1 or get_order_status(username)[0] == 3:
+            c.execute('''DELETE FROM orders WHERE id = ?''', (order[0],))
+            print(f'The order {get_order_status(username)[1]} has been cancelled')
+        else:
+            print('There are no active orders')
+        conn.commit()
+        conn.close()
+    except Exception:
+        print('There are no active orders')
+
+
+def select_option(username):
+    while True:
+        print('(1) Order Pizza')
+        print('(2) Get history')
+        print('(3) Get the order status')
+        print('(4) Cancel the order')
+        print('(5) Log out')
+        option = input(': ')
+        if option == '1':
+            ordering(username)
+        elif option == '2':
+            get_order_history(username)
+        elif option == '3':
+            status = get_order_status(username)
+            if status[0] == 1:
+                print(f"The order {status[1]} is being delivered")
+            elif status[0] == 2:
+                print(f"The order {status[1]} is delivered")
+            elif status[0] == 3:
+                print(f"The order {status[1]} is being cooked")
+            else:
+                print('There are no orders')
+        elif option == '4':
+            cancel_order(username)
+        elif option == '5':
+            break
+
+
 def main():
     print('WELCOME TO FATTY MAN PIZZA ORDERING SYSTEM!')
     print_main_menu()
@@ -105,23 +151,6 @@ def main():
 
         else:
             print('Invalid choice. Please try again.')
-
-
-def select_option(username):
-    while True:
-        print('(1) Order Pizza')
-        print('(2) Get history')
-        print('(3) Get the order status')
-        print('(4) Log out')
-        option = input(': ')
-        if option == '1':
-            ordering(username)
-        elif option == '2':
-            get_order_history(username)
-        elif option == '3':
-            get_order_status(username)
-        elif option == '4':
-            break
 
 
 if __name__ == '__main__':
